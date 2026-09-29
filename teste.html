@@ -1,0 +1,1255 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="h-full bg-slate-950 text-slate-100 select-none overflow-hidden">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>RhythmMania Pro - 4K Rhythm Engine</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;800;900&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/lucide@latest"></script>
+  
+  <style>
+    body { font-family: 'Rajdhani', sans-serif; overflow: hidden; touch-action: none; }
+    .font-orbitron { font-family: 'Orbitron', sans-serif; }
+    
+    /* Glow Effects */
+    .glow-cyan { text-shadow: 0 0 10px rgba(6, 182, 212, 0.8), 0 0 20px rgba(6, 182, 212, 0.4); }
+    .glow-magenta { text-shadow: 0 0 10px rgba(236, 72, 153, 0.8), 0 0 20px rgba(236, 72, 153, 0.4); }
+    .glow-yellow { text-shadow: 0 0 10px rgba(234, 179, 8, 0.8), 0 0 20px rgba(234, 179, 8, 0.4); }
+    .glow-rose { text-shadow: 0 0 10px rgba(244, 63, 94, 0.8), 0 0 20px rgba(244, 63, 94, 0.4); }
+    
+    .box-glow-cyan { box-shadow: 0 0 20px rgba(6, 182, 212, 0.4), inset 0 0 10px rgba(6, 182, 212, 0.2); }
+    .box-glow-magenta { box-shadow: 0 0 20px rgba(236, 72, 153, 0.4), inset 0 0 10px rgba(236, 72, 153, 0.2); }
+
+    /* Custom Scrollbars */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: rgba(15, 23, 42, 0.6); }
+    ::-webkit-scrollbar-thumb { background: rgba(51, 65, 85, 0.8); border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: rgba(100, 116, 139, 1); }
+
+    .scanlines {
+      background: linear-gradient(
+        to bottom,
+        rgba(255,255,255,0),
+        rgba(255,255,255,0) 50%,
+        rgba(0, 0, 0, 0.25) 50%,
+        rgba(0, 0, 0, 0.25)
+      );
+      background-size: 100% 4px;
+    }
+  </style>
+</head>
+<body class="h-full bg-slate-950 text-slate-100 flex flex-col relative select-none">
+
+  <!-- Ambient CRT / Grid Overlay -->
+  <div class="absolute inset-0 pointer-events-none z-0 opacity-15 bg-[radial-gradient(#3b82f6_1px,transparent_1px)] [background-size:24px_24px]"></div>
+  <div class="absolute inset-0 pointer-events-none z-0 scanlines opacity-30"></div>
+
+  <!-- MAIN MENU SCREEN -->
+  <div id="screen-menu" class="relative z-10 h-full flex flex-col justify-between p-4 md:p-6 max-w-6xl mx-auto w-full">
+    <!-- Header -->
+    <div class="flex justify-between items-center border-b border-slate-800 pb-4">
+      <div>
+        <h1 class="text-4xl md:text-6xl font-black font-orbitron tracking-wider bg-clip-text text-transparent bg-gradient-to-r from-cyan-400 via-fuchsia-500 to-amber-400 glow-cyan">
+          RHYTHM<span class="text-white">MANIA</span> <span class="text-xs px-2 py-0.5 rounded bg-fuchsia-950 text-fuchsia-400 border border-fuchsia-800 align-top font-mono">PRO 4K</span>
+        </h1>
+        <p class="text-cyan-400 text-xs md:text-sm tracking-widest font-semibold uppercase mt-0.5 glow-cyan">
+          High-Precision Web Audio Rhythm Engine
+        </p>
+      </div>
+      <div class="flex items-center gap-3">
+        <button id="btn-open-editor" class="px-4 py-2 bg-slate-900 hover:bg-slate-800 border border-slate-700 text-cyan-400 rounded-lg font-orbitron font-bold text-xs md:text-sm transition flex items-center gap-2">
+          <i data-lucide="edit-3" class="w-4 h-4"></i> EDITAR BEATMAPS
+        </button>
+      </div>
+    </div>
+
+    <!-- Song Selector Grid -->
+    <div class="w-full grid grid-cols-1 lg:grid-cols-3 gap-6 my-auto py-4">
+      <!-- Track Selection List -->
+      <div class="lg:col-span-2 bg-slate-900/80 border border-slate-800 rounded-2xl p-4 backdrop-blur-md flex flex-col h-[380px]">
+        <div class="flex justify-between items-center mb-3 px-1">
+          <h2 class="text-lg font-orbitron font-bold text-slate-300 flex items-center gap-2">
+            <i data-lucide="music" class="text-cyan-400"></i> SELEÇÃO DE MÚSICAS
+          </h2>
+          <label class="cursor-pointer px-3 py-1 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded text-xs font-orbitron text-slate-300 flex items-center gap-1.5 transition">
+            <i data-lucide="upload" class="w-3.5 h-3.5 text-fuchsia-400"></i> Importar JSON
+            <input type="file" id="file-import-json" accept=".json" class="hidden">
+          </label>
+        </div>
+        
+        <div id="song-list" class="flex-1 overflow-y-auto space-y-2.5 pr-2">
+          <!-- Dynamically populated songs -->
+        </div>
+      </div>
+
+      <!-- Player Controls & Audio Calibration Settings -->
+      <div class="bg-slate-900/80 border border-slate-800 rounded-2xl p-5 backdrop-blur-md flex flex-col justify-between">
+        <div class="space-y-4">
+          <h2 class="text-lg font-orbitron font-bold text-slate-300 flex items-center gap-2 border-b border-slate-800 pb-2">
+            <i data-lucide="sliders" class="text-fuchsia-400"></i> CONFIGURAÇÕES 4K
+          </h2>
+          
+          <!-- Speed Scroll Slider -->
+          <div>
+            <div class="flex justify-between items-center text-xs font-semibold mb-1">
+              <span class="text-slate-400">Velocidade das Notas (Scroll)</span>
+              <span id="speed-val" class="font-orbitron font-bold text-cyan-400 text-sm">3.0x</span>
+            </div>
+            <input id="speed-slider" type="range" min="1.0" max="10.0" step="0.2" value="3.0" class="w-full accent-cyan-400 cursor-pointer">
+          </div>
+
+          <!-- Audio Offset Calibration -->
+          <div>
+            <div class="flex justify-between items-center text-xs font-semibold mb-1">
+              <span class="text-slate-400">Audio Offset (Ajuste de Latência)</span>
+              <span id="offset-val" class="font-orbitron font-bold text-fuchsia-400 text-sm">0 ms</span>
+            </div>
+            <input id="offset-slider" type="range" min="-150" max="150" step="5" value="0" class="w-full accent-fuchsia-400 cursor-pointer">
+          </div>
+
+          <!-- Key Bindings Remapping -->
+          <div>
+            <label class="text-xs font-semibold text-slate-400 block mb-1.5">Teclas do Teclado (4K)</label>
+            <div class="grid grid-cols-4 gap-2 text-center font-orbitron font-bold">
+              <input type="text" id="key-bind-0" maxlength="1" value="D" class="bg-slate-950 border border-slate-700 text-cyan-400 text-center py-1.5 rounded uppercase focus:border-cyan-400 outline-none">
+              <input type="text" id="key-bind-1" maxlength="1" value="F" class="bg-slate-950 border border-slate-700 text-fuchsia-400 text-center py-1.5 rounded uppercase focus:border-fuchsia-400 outline-none">
+              <input type="text" id="key-bind-2" maxlength="1" value="J" class="bg-slate-950 border border-slate-700 text-fuchsia-400 text-center py-1.5 rounded uppercase focus:border-fuchsia-400 outline-none">
+              <input type="text" id="key-bind-3" maxlength="1" value="K" class="bg-slate-950 border border-slate-700 text-cyan-400 text-center py-1.5 rounded uppercase focus:border-cyan-400 outline-none">
+            </div>
+          </div>
+
+          <!-- Difficulty Selected Badge -->
+          <div class="bg-slate-950/70 p-3 rounded-xl border border-slate-800 flex justify-between items-center">
+            <div>
+              <span class="text-[10px] text-slate-500 uppercase tracking-wider block font-semibold">Dificuldade</span>
+              <span id="diff-badge" class="font-orbitron font-bold text-base text-amber-400">MÉDIO</span>
+            </div>
+            <div class="text-right">
+              <span class="text-[10px] text-slate-500 uppercase tracking-wider block font-semibold">BPM / LN</span>
+              <span id="bpm-badge" class="font-orbitron font-bold text-sm text-slate-300">140 BPM</span>
+            </div>
+          </div>
+        </div>
+
+        <button id="btn-start" class="w-full mt-4 py-4 bg-gradient-to-r from-cyan-500 via-fuchsia-600 to-amber-500 hover:from-cyan-400 hover:to-amber-400 text-slate-950 font-orbitron font-black text-xl rounded-xl shadow-lg transition transform hover:-translate-y-0.5 active:translate-y-0 flex items-center justify-center gap-2 group">
+          <i data-lucide="play" class="fill-current w-6 h-6 group-hover:scale-110 transition"></i> JOGAR
+        </button>
+      </div>
+    </div>
+
+    <!-- Controls Footer -->
+    <div class="text-slate-500 text-xs font-semibold text-center border-t border-slate-800/80 pt-3 flex justify-between items-center">
+      <span>Atalhos: <kbd class="px-1.5 py-0.5 bg-slate-800 text-slate-300 rounded font-mono">ESC</kbd> Pausa | <kbd class="px-1.5 py-0.5 bg-slate-800 text-slate-300 rounded font-mono">R</kbd> Reinicia</span>
+      <span>RhythmMania Engine v2.0 • Audio Scheduling a 60FPS Sync</span>
+    </div>
+  </div>
+
+  <!-- GAMEPLAY SCREEN -->
+  <div id="screen-game" class="relative z-10 h-full w-full hidden flex flex-col justify-between items-center py-2">
+    
+    <!-- Top HUD Overlay Stats Bar -->
+    <div class="w-full max-w-3xl px-4 flex justify-between items-center z-20 font-orbitron">
+      <!-- Pause / Exit Button -->
+      <div class="flex items-center gap-3">
+        <button id="btn-pause" class="bg-slate-900/90 hover:bg-slate-800 text-slate-300 p-2 rounded-lg border border-slate-700 transition">
+          <i data-lucide="pause" class="w-5 h-5"></i>
+        </button>
+        <div class="text-xs text-slate-400">
+          <span class="block text-[10px] text-slate-500">FPS</span>
+          <span id="fps-counter" class="text-cyan-400 font-bold">60</span>
+        </div>
+      </div>
+
+      <!-- Health Bar (osu! Style Meter) -->
+      <div class="flex-1 max-w-sm mx-4">
+        <div class="flex justify-between text-xs mb-1">
+          <span class="text-slate-400 font-bold">HEALTH</span>
+          <span id="hp-text" class="text-cyan-400 font-bold">100%</span>
+        </div>
+        <div class="w-full bg-slate-900 h-3 rounded-full border border-slate-800 overflow-hidden p-0.5">
+          <div id="hp-bar" class="h-full bg-gradient-to-r from-cyan-500 to-emerald-400 rounded-full transition-all duration-75" style="width: 100%;"></div>
+        </div>
+      </div>
+
+      <!-- Live Accuracy & Score -->
+      <div class="text-right">
+        <div id="game-score" class="text-2xl md:text-3xl font-black text-white glow-cyan tracking-wider">
+          0000000
+        </div>
+        <div id="game-accuracy" class="text-xs font-bold text-slate-400">
+          100.00%
+        </div>
+      </div>
+    </div>
+
+    <!-- Song Progress Line -->
+    <div class="w-full max-w-3xl px-4 my-1">
+      <div class="w-full bg-slate-900/80 h-1 rounded-full overflow-hidden">
+        <div id="song-progress" class="bg-fuchsia-500 h-full w-0 transition-all duration-100"></div>
+      </div>
+    </div>
+
+    <!-- PLAYFIELD CANVA ARENA -->
+    <div id="playfield-container" class="relative flex-1 w-full max-w-md my-1 bg-slate-950/95 border-x-2 border-slate-800 overflow-hidden shadow-2xl flex flex-col justify-end">
+      
+      <!-- Main Canvas Render Engine -->
+      <canvas id="game-canvas" class="absolute inset-0 w-full h-full z-10"></canvas>
+
+      <!-- Track Key Lighting Overlay -->
+      <div class="absolute inset-0 grid grid-cols-4 pointer-events-none z-0">
+        <div id="lane-light-0" class="border-r border-slate-800/40 bg-gradient-to-t from-cyan-500/20 to-transparent transition-opacity opacity-0"></div>
+        <div id="lane-light-1" class="border-r border-slate-800/40 bg-gradient-to-t from-fuchsia-500/20 to-transparent transition-opacity opacity-0"></div>
+        <div id="lane-light-2" class="border-r border-slate-800/40 bg-gradient-to-t from-fuchsia-500/20 to-transparent transition-opacity opacity-0"></div>
+        <div id="lane-light-3" class="bg-gradient-to-t from-cyan-500/20 to-transparent transition-opacity opacity-0"></div>
+      </div>
+
+      <!-- Hit Judgment Text & Combo Center Overlay -->
+      <div class="absolute top-1/3 inset-x-0 flex flex-col items-center justify-center pointer-events-none z-20">
+        <div id="judgment-text" class="text-3xl font-orbitron font-black tracking-wider transition-transform duration-75 scale-0">
+          300
+        </div>
+        <div id="combo-container" class="text-center mt-1 opacity-0 transition-opacity">
+          <span id="combo-count" class="text-4xl md:text-5xl font-orbitron font-black text-white glow-cyan">0</span>
+          <span class="block text-[10px] font-bold text-slate-400 tracking-widest uppercase">COMBO</span>
+        </div>
+      </div>
+
+      <!-- Unstable Rate / Early-Late Timing Bar -->
+      <div class="absolute bottom-16 inset-x-8 z-20 flex flex-col items-center pointer-events-none">
+        <div class="relative w-full h-2 bg-slate-900 border border-slate-700/80 rounded-full overflow-hidden flex items-center justify-center">
+          <!-- Center line -->
+          <div class="absolute w-0.5 h-full bg-slate-400 z-10"></div>
+          <!-- Target Perfect Range -->
+          <div class="w-1/4 h-full bg-amber-500/30"></div>
+          <!-- Early/Late Tick Indicator -->
+          <div id="timing-tick" class="absolute w-1.5 h-full bg-cyan-400 rounded transition-all duration-150 opacity-0"></div>
+        </div>
+        <div class="flex justify-between w-full text-[9px] font-orbitron text-slate-500 mt-0.5">
+          <span>EARLY</span>
+          <span id="ur-text" class="text-slate-400 font-bold">UR 0.0</span>
+          <span>LATE</span>
+        </div>
+      </div>
+
+      <!-- Receptor Line Buttons Base -->
+      <div id="receptor-line" class="relative z-20 w-full h-14 border-t-4 border-cyan-400 bg-slate-900/80 grid grid-cols-4 backdrop-blur-sm">
+        <div class="flex items-center justify-center border-r border-slate-800 text-lg font-orbitron font-black text-slate-400" id="key-cap-0">D</div>
+        <div class="flex items-center justify-center border-r border-slate-800 text-lg font-orbitron font-black text-slate-400" id="key-cap-1">F</div>
+        <div class="flex items-center justify-center border-r border-slate-800 text-lg font-orbitron font-black text-slate-400" id="key-cap-2">J</div>
+        <div class="flex items-center justify-center text-lg font-orbitron font-black text-slate-400" id="key-cap-3">K</div>
+      </div>
+    </div>
+
+    <!-- Touch Receptor Buttons for Mobile -->
+    <div class="w-full max-w-md grid grid-cols-4 gap-2 px-2 pb-1 md:hidden z-30">
+      <button class="touch-btn bg-slate-800/90 active:bg-cyan-600 border border-slate-700 py-3 rounded-lg font-orbitron font-bold text-lg text-cyan-400" data-key="0">D</button>
+      <button class="touch-btn bg-slate-800/90 active:bg-fuchsia-600 border border-slate-700 py-3 rounded-lg font-orbitron font-bold text-lg text-fuchsia-400" data-key="1">F</button>
+      <button class="touch-btn bg-slate-800/90 active:bg-fuchsia-600 border border-slate-700 py-3 rounded-lg font-orbitron font-bold text-lg text-fuchsia-400" data-key="2">J</button>
+      <button class="touch-btn bg-slate-800/90 active:bg-cyan-600 border border-slate-700 py-3 rounded-lg font-orbitron font-bold text-lg text-cyan-400" data-key="3">K</button>
+    </div>
+  </div>
+
+  <!-- PAUSE MENU OVERLAY -->
+  <div id="modal-pause" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-50 hidden flex flex-col items-center justify-center">
+    <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 max-w-xs w-full text-center space-y-4 shadow-2xl">
+      <h2 class="text-2xl font-orbitron font-black text-cyan-400 glow-cyan">JOGO PAUSADO</h2>
+      <div class="space-y-2 font-orbitron">
+        <button id="btn-resume" class="w-full py-3 bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold rounded-xl transition">CONTINUAR</button>
+        <button id="btn-restart" class="w-full py-3 bg-slate-800 hover:bg-slate-700 text-white font-bold rounded-xl transition">REINICIAR</button>
+        <button id="btn-exit" class="w-full py-3 bg-rose-600/80 hover:bg-rose-500 text-white font-bold rounded-xl transition">SAIR PARA O MENU</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- RESULTS EVALUATION SCREEN -->
+  <div id="screen-results" class="relative z-10 h-full w-full hidden flex flex-col items-center justify-center p-4 max-w-4xl mx-auto">
+    <div class="w-full bg-slate-900/90 border border-slate-800 rounded-3xl p-6 md:p-8 backdrop-blur-xl shadow-2xl">
+      <div class="text-center mb-4">
+        <h2 class="text-xl font-orbitron font-bold text-slate-400 tracking-wider">RESULTADO DA PARTIDA</h2>
+        <h3 id="result-song-title" class="text-3xl font-orbitron font-black text-cyan-400 mt-0.5">NAME OF SONG</h3>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6 items-center my-6">
+        <!-- Rank Letter Grade Badge -->
+        <div class="flex flex-col items-center justify-center p-6 bg-slate-950/70 rounded-2xl border border-slate-800">
+          <span class="text-xs font-orbitron text-slate-500 mb-1 uppercase tracking-widest">RANK</span>
+          <div id="result-rank" class="text-8xl font-orbitron font-black glow-yellow text-amber-400">
+            S
+          </div>
+        </div>
+
+        <!-- Major Stats -->
+        <div class="md:col-span-2 space-y-3 font-orbitron">
+          <div class="flex justify-between items-center border-b border-slate-800 pb-2">
+            <span class="text-slate-400">Pontuação Total</span>
+            <span id="result-score" class="text-2xl font-bold text-white">0985400</span>
+          </div>
+          <div class="flex justify-between items-center border-b border-slate-800 pb-2">
+            <span class="text-slate-400">Precisão Final</span>
+            <span id="result-accuracy" class="text-xl font-bold text-cyan-400">98.45%</span>
+          </div>
+          <div class="flex justify-between items-center border-b border-slate-800 pb-2">
+            <span class="text-slate-400">Maior Combo</span>
+            <span id="result-maxcombo" class="text-xl font-bold text-fuchsia-400">420x</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Hit Breakdown Stats Grid -->
+      <div class="grid grid-cols-2 sm:grid-cols-5 gap-2.5 my-4 font-orbitron text-center">
+        <div class="bg-amber-500/10 border border-amber-500/30 p-2.5 rounded-xl">
+          <span class="block text-[10px] text-amber-400 font-bold mb-0.5">MAX 300</span>
+          <span id="count-max" class="text-lg font-bold text-amber-300">0</span>
+        </div>
+        <div class="bg-emerald-500/10 border border-emerald-500/30 p-2.5 rounded-xl">
+          <span class="block text-[10px] text-emerald-400 font-bold mb-0.5">300</span>
+          <span id="count-300" class="text-lg font-bold text-emerald-300">0</span>
+        </div>
+        <div class="bg-sky-500/10 border border-sky-500/30 p-2.5 rounded-xl">
+          <span class="block text-[10px] text-sky-400 font-bold mb-0.5">200</span>
+          <span id="count-200" class="text-lg font-bold text-sky-300">0</span>
+        </div>
+        <div class="bg-indigo-500/10 border border-indigo-500/30 p-2.5 rounded-xl">
+          <span class="block text-[10px] text-indigo-400 font-bold mb-0.5">50</span>
+          <span id="count-50" class="text-lg font-bold text-indigo-300">0</span>
+        </div>
+        <div class="bg-rose-500/10 border border-rose-500/30 p-2.5 rounded-xl col-span-2 sm:col-span-1">
+          <span class="block text-[10px] text-rose-400 font-bold mb-0.5">MISS</span>
+          <span id="count-miss" class="text-lg font-bold text-rose-300">0</span>
+        </div>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="flex gap-4 mt-6">
+        <button id="btn-results-retry" class="flex-1 py-3.5 bg-slate-800 hover:bg-slate-700 text-white font-orbitron font-bold rounded-xl transition border border-slate-700 flex items-center justify-center gap-2">
+          <i data-lucide="rotate-ccw"></i> JOGAR NOVAMENTE
+        </button>
+        <button id="btn-results-menu" class="flex-1 py-3.5 bg-gradient-to-r from-cyan-500 to-fuchsia-600 hover:from-cyan-400 hover:to-fuchsia-500 text-slate-950 font-orbitron font-black rounded-xl shadow-lg transition flex items-center justify-center gap-2">
+          <i data-lucide="home"></i> MENU PRINCIPAL
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- BEATMAP EDITOR MODAL SCREEN -->
+  <div id="screen-editor" class="fixed inset-0 bg-slate-950 z-50 hidden flex flex-col p-4">
+    <div class="flex justify-between items-center border-b border-slate-800 pb-3">
+      <h2 class="text-xl font-orbitron font-bold text-cyan-400 flex items-center gap-2">
+        <i data-lucide="edit-3"></i> EDITOR DE BEATMAPS 4K
+      </h2>
+      <button id="btn-close-editor" class="text-slate-400 hover:text-white">
+        <i data-lucide="x" class="w-6 h-6"></i>
+      </button>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 my-4 flex-1 overflow-y-auto">
+      <div class="bg-slate-900 p-4 rounded-xl border border-slate-800 space-y-3">
+        <h3 class="font-orbitron text-sm font-bold text-slate-300">1. INFORMAÇÕES DA FAIXA</h3>
+        <div>
+          <label class="text-xs text-slate-400 block mb-1">Título da Música</label>
+          <input type="text" id="editor-title" value="My Custom Synth" class="w-full bg-slate-950 border border-slate-700 rounded px-3 py-1.5 text-sm">
+        </div>
+        <div>
+          <label class="text-xs text-slate-400 block mb-1">BPM</label>
+          <input type="number" id="editor-bpm" value="140" class="w-full bg-slate-950 border border-slate-700 rounded px-3 py-1.5 text-sm">
+        </div>
+        <div>
+          <label class="text-xs text-slate-400 block mb-1">Frequência Base da Sintetização (Hz)</label>
+          <input type="number" id="editor-freq" value="261.63" class="w-full bg-slate-950 border border-slate-700 rounded px-3 py-1.5 text-sm">
+        </div>
+      </div>
+
+      <div class="md:col-span-2 bg-slate-900 p-4 rounded-xl border border-slate-800 flex flex-col">
+        <h3 class="font-orbitron text-sm font-bold text-slate-300 mb-2">2. CÓDIGO JSON DO BEATMAP</h3>
+        <textarea id="editor-json" class="w-full flex-1 bg-slate-950 border border-slate-800 rounded p-3 font-mono text-xs text-cyan-300 focus:outline-none resize-none" spellcheck="false"></textarea>
+      </div>
+    </div>
+
+    <div class="flex justify-end gap-3 pt-2 border-t border-slate-800">
+      <button id="btn-export-json" class="px-5 py-2.5 bg-slate-800 hover:bg-slate-700 text-white rounded-xl font-orbitron font-bold text-xs flex items-center gap-2">
+        <i data-lucide="download" class="w-4 h-4"></i> EXPORTAR PARA ARQUIVO
+      </button>
+      <button id="btn-save-editor" class="px-6 py-2.5 bg-cyan-500 hover:bg-cyan-400 text-slate-950 rounded-xl font-orbitron font-black text-xs flex items-center gap-2">
+        <i data-lucide="check" class="w-4 h-4"></i> SALVAR E CARREGAR
+      </button>
+    </div>
+  </div>
+
+  <script>
+    /* ===================================================================
+       PRO AUDIO SYNTHESIS & LOW LATENCY AUDIO SCHEDULER
+       Uses AudioContext.currentTime for zero-jitter rhythm accuracy
+       =================================================================== */
+    class LowLatencyAudioEngine {
+      constructor() {
+        this.ctx = null;
+        this.masterGain = null;
+      }
+
+      init() {
+        if (!this.ctx) {
+          const AudioContext = window.AudioContext || window.webkitAudioContext;
+          this.ctx = new AudioContext({ latencyHint: 'interactive' });
+          this.masterGain = this.ctx.createGain();
+          this.masterGain.gain.value = 0.35;
+          this.masterGain.connect(this.ctx.destination);
+        }
+        if (this.ctx.state === 'suspended') {
+          this.ctx.resume();
+        }
+      }
+
+      getCurrentTime() {
+        return this.ctx ? this.ctx.currentTime : 0;
+      }
+
+      // Ultra-low latency synthesized hitsound (osu! clap style)
+      playHitsound() {
+        if (!this.ctx) return;
+        const now = this.ctx.currentTime;
+        
+        // High pitch tone
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(1200, now);
+        osc.frequency.exponentialRampToValueAtTime(400, now + 0.04);
+
+        gain.gain.setValueAtTime(0.4, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.04);
+
+        osc.connect(gain);
+        gain.connect(this.masterGain);
+        osc.start(now);
+        osc.stop(now + 0.045);
+      }
+
+      // Synthesizes instrument notes on exact scheduled timestamp
+      scheduleNoteTone(freq, time, duration = 0.12, type = 'sawtooth') {
+        if (!this.ctx) return;
+
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+
+        osc.type = type;
+        osc.frequency.setValueAtTime(freq, time);
+
+        gain.gain.setValueAtTime(0.2, time);
+        gain.gain.exponentialRampToValueAtTime(0.0001, time + duration);
+
+        osc.connect(gain);
+        gain.connect(this.masterGain);
+
+        osc.start(time);
+        osc.stop(time + duration + 0.01);
+      }
+
+      // Bass Kick Drum Synthesis
+      scheduleKick(time) {
+        if (!this.ctx) return;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+
+        osc.frequency.setValueAtTime(160, time);
+        osc.frequency.exponentialRampToValueAtTime(0.01, time + 0.12);
+
+        gain.gain.setValueAtTime(0.6, time);
+        gain.gain.exponentialRampToValueAtTime(0.001, time + 0.12);
+
+        osc.connect(gain);
+        gain.connect(this.masterGain);
+
+        osc.start(time);
+        osc.stop(time + 0.13);
+      }
+    }
+
+    const audioEngine = new LowLatencyAudioEngine();
+
+    /* ===================================================================
+       BEATMAP CATALOG (INCLUDES TAP NOTES & HOLD NOTES / LONG NOTES)
+       =================================================================== */
+    const SONG_CATALOG = [
+      {
+        id: 'synthwave-pulse',
+        title: 'CYBER PULSE 4K',
+        artist: 'Aethel Synth',
+        bpm: 130,
+        difficultyName: 'FÁCIL',
+        diffColor: 'text-emerald-400',
+        duration: 32,
+        baseFreq: 220,
+        notes: generateDemoBeatmap(130, 32, 0.45, false)
+      },
+      {
+        id: 'neon-overdrive',
+        title: 'NEON OVERDRIVE',
+        artist: 'HyperDrive',
+        bpm: 150,
+        difficultyName: 'MÉDIO',
+        diffColor: 'text-amber-400',
+        duration: 38,
+        baseFreq: 261.63,
+        notes: generateDemoBeatmap(150, 38, 0.65, true)
+      },
+      {
+        id: 'quantum-hyperdrive',
+        title: 'QUANTUM INSANITY',
+        artist: 'Chiptune Core',
+        bpm: 180,
+        difficultyName: 'INSANO',
+        diffColor: 'text-rose-500 glow-rose',
+        duration: 45,
+ baseFreq: 329.63,
+        notes: generateDemoBeatmap(180, 45, 0.85, true)
+      }
+    ];
+
+    // Demo Procedural Beatmap Generator with Hold Notes support
+    function generateDemoBeatmap(bpm, duration, density, allowHoldNotes) {
+      const notes = [];
+      const beatInterval = 60 / bpm;
+      const totalBeats = Math.floor(duration / beatInterval);
+      const scale = [261.63, 293.66, 329.63, 349.23, 392.00, 440.00];
+
+      let idCounter = 1;
+
+      for (let b = 4; b < totalBeats - 2; b++) {
+        if (Math.random() < density) {
+          const lane = Math.floor(Math.random() * 4);
+          const time = b * beatInterval;
+          const isHold = allowHoldNotes && Math.random() < 0.25;
+          const holdDuration = isHold ? (Math.floor(Math.random() * 2) + 1) * beatInterval : 0;
+
+          notes.push({
+            id: idCounter++,
+            lane: lane,
+            time: time,
+            holdDuration: holdDuration,
+            freq: scale[Math.floor(Math.random() * scale.length)],
+            hit: false,
+            holdActive: false,
+            holdCompleted: false,
+            missed: false
+          });
+        }
+      }
+      return notes.sort((a, b) => a.time - b.time);
+    }
+
+    /* ===================================================================
+       GAME STATE VARIABLES
+       =================================================================== */
+    let selectedSong = SONG_CATALOG[1];
+    let scrollSpeed = 3.0;
+    let audioOffsetMs = 0;
+    let keyBindings = ['d', 'f', 'j', 'k'];
+
+    let isPlaying = false;
+    let isPaused = false;
+
+    // Timing and Clock
+    let gameStartTime = 0;
+    let pauseStartTime = 0;
+    let totalPausedDuration = 0;
+    let lastFrameTime = 0;
+    let fps = 60;
+
+    // Active Note Stream
+    let activeNotes = [];
+    let scheduledAudioIndex = 0;
+
+    // Particle FX Engine Array
+    let particles = [];
+
+    // Player Scoring Engine
+    let score = 0;
+    let combo = 0;
+    let maxCombo = 0;
+    let hp = 100;
+    let counts = { max: 0, p300: 0, p200: 0, p50: 0, miss: 0 };
+    let totalHitPoints = 0;
+
+    //osu! Timing Windows (in Seconds)
+    const JUDGMENTS = {
+      MAX:  { window: 0.025, score: 320, name: '300', color: '#eab308' }, // Perfect 300
+      P300: { window: 0.050, score: 300, name: '300', color: '#22c55e' }, // Great
+      P200: { window: 0.100, score: 200, name: '200', color: '#38bdf8' }, // Good
+      P50:  { window: 0.150, score: 50,  name: '50',  color: '#818cf8' }, // Bad
+      MISS: { window: 0.190, score: 0,   name: 'MISS', color: '#f43f5e' }  // Miss
+    };
+
+    // Canvas Setup
+    const canvas = document.getElementById('game-canvas');
+    const ctx = canvas.getContext('2d');
+    let canvasWidth = 0;
+    let canvasHeight = 0;
+
+    /* ===================================================================
+       DOM EVENT INITIALIZATION
+       =================================================================== */
+    document.addEventListener('DOMContentLoaded', () => {
+      lucide.createIcons();
+      renderSongList();
+
+      // Settings Listeners
+      const speedSlider = document.getElementById('speed-slider');
+      const speedVal = document.getElementById('speed-val');
+      speedSlider.addEventListener('input', (e) => {
+        scrollSpeed = parseFloat(e.target.value);
+        speedVal.textContent = scrollSpeed.toFixed(1) + 'x';
+      });
+
+      const offsetSlider = document.getElementById('offset-slider');
+      const offsetVal = document.getElementById('offset-val');
+      offsetSlider.addEventListener('input', (e) => {
+        audioOffsetMs = parseInt(e.target.value);
+        offsetVal.textContent = `${audioOffsetMs} ms`;
+      });
+
+      // Keymap inputs
+      for (let i = 0; i < 4; i++) {
+        document.getElementById(`key-bind-${i}`).addEventListener('change', (e) => {
+          if (e.target.value) {
+            keyBindings[i] = e.target.value.toLowerCase();
+            document.getElementById(`key-cap-${i}`).textContent = e.target.value.toUpperCase();
+          }
+        });
+      }
+
+      // JSON File Import
+      document.getElementById('file-import-json').addEventListener('change', handleJsonImport);
+
+      // Buttons
+      document.getElementById('btn-start').addEventListener('click', startGame);
+      document.getElementById('btn-pause').addEventListener('click', togglePause);
+      document.getElementById('btn-resume').addEventListener('click', togglePause);
+      document.getElementById('btn-restart').addEventListener('click', () => { togglePause(); startGame(); });
+      document.getElementById('btn-exit').addEventListener('click', showMenuScreen);
+
+      document.getElementById('btn-results-retry').addEventListener('click', startGame);
+      document.getElementById('btn-results-menu').addEventListener('click', showMenuScreen);
+
+      // Editor Modal
+      document.getElementById('btn-open-editor').addEventListener('click', openEditor);
+      document.getElementById('btn-close-editor').addEventListener('click', closeEditor);
+      document.getElementById('btn-save-editor').addEventListener('click', saveEditorBeatmap);
+      document.getElementById('btn-export-json').addEventListener('click', exportEditorJson);
+
+      // Global Key Controls
+      window.addEventListener('keydown', handleKeyDown);
+      window.addEventListener('keyup', handleKeyUp);
+      window.addEventListener('resize', resizeCanvas);
+
+      // Touch Buttons
+      document.querySelectorAll('.touch-btn').forEach(btn => {
+        btn.addEventListener('touchstart', (e) => {
+          e.preventDefault();
+          triggerLanePress(parseInt(btn.dataset.key));
+        });
+        btn.addEventListener('touchend', (e) => {
+          e.preventDefault();
+          triggerLaneRelease(parseInt(btn.dataset.key));
+        });
+      });
+    });
+
+    function renderSongList() {
+      const container = document.getElementById('song-list');
+      container.innerHTML = '';
+
+      SONG_CATALOG.forEach(song => {
+        const isSelected = song.id === selectedSong.id;
+        const card = document.createElement('div');
+        card.className = `p-3.5 rounded-xl border transition cursor-pointer flex justify-between items-center ${
+          isSelected 
+            ? 'bg-cyan-950/50 border-cyan-500 box-glow-cyan' 
+            : 'bg-slate-950/60 border-slate-800 hover:border-slate-700'
+        }`;
+
+        card.innerHTML = `
+          <div>
+            <div class="font-orbitron font-bold text-base text-white">${song.title}</div>
+            <div class="text-xs text-slate-400">${song.artist} • <span class="text-cyan-400">${song.bpm} BPM</span> • ${song.notes.length} Notas</div>
+          </div>
+          <div class="font-orbitron font-bold text-xs ${song.diffColor}">
+            ${song.difficultyName}
+          </div>
+        `;
+
+        card.addEventListener('click', () => {
+          selectedSong = song;
+          document.getElementById('diff-badge').textContent = song.difficultyName;
+          document.getElementById('diff-badge').className = `font-orbitron font-bold text-base ${song.diffColor}`;
+          document.getElementById('bpm-badge').textContent = `${song.bpm} BPM`;
+          renderSongList();
+        });
+
+        container.appendChild(card);
+      });
+    }
+
+    function handleJsonImport(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        try {
+          const imported = JSON.parse(event.target.result);
+          if (imported.title && imported.notes) {
+            imported.id = 'custom-' + Date.now();
+            imported.diffColor = 'text-fuchsia-400';
+            SONG_CATALOG.push(imported);
+            selectedSong = imported;
+            renderSongList();
+          }
+        } catch(err) {
+          // Ignore invalid files
+        }
+      };
+      reader.readAsText(file);
+    }
+
+    function resizeCanvas() {
+      const playfield = document.getElementById('playfield-container');
+      if (playfield) {
+        canvasWidth = playfield.clientWidth;
+        canvasHeight = playfield.clientHeight;
+        canvas.width = canvasWidth;
+        canvas.height = canvasHeight;
+      }
+    }
+
+    /* ===================================================================
+       ENGINE GAMEPLAY INITIALIZATION
+       =================================================================== */
+    function startGame() {
+      audioEngine.init();
+
+      // Reset performance stats
+      score = 0;
+      combo = 0;
+      maxCombo = 0;
+      hp = 100;
+      counts = { max: 0, p300: 0, p200: 0, p50: 0, miss: 0 };
+      totalHitPoints = 0;
+      particles = [];
+
+      // Copy Notes Stream & sort
+      activeNotes = selectedSong.notes.map(n => ({
+        ...n,
+        hit: false,
+        holdActive: false,
+        holdCompleted: false,
+        missed: false
+      }));
+
+      scheduledAudioIndex = 0;
+      isPaused = false;
+      document.getElementById('modal-pause').classList.add('hidden');
+
+      // Screen Navigation
+      document.getElementById('screen-menu').classList.add('hidden');
+      document.getElementById('screen-results').classList.add('hidden');
+      document.getElementById('screen-game').classList.remove('hidden');
+
+      resizeCanvas();
+      updateHUD();
+
+      isPlaying = true;
+      gameStartTime = audioEngine.getCurrentTime();
+      totalPausedDuration = 0;
+
+      requestAnimationFrame(gameLoop);
+    }
+
+    function showMenuScreen() {
+      isPlaying = false;
+      isPaused = false;
+      document.getElementById('modal-pause').classList.add('hidden');
+      document.getElementById('screen-game').classList.add('hidden');
+      document.getElementById('screen-results').classList.add('hidden');
+      document.getElementById('screen-menu').classList.remove('hidden');
+    }
+
+    function togglePause() {
+      if (!isPlaying) return;
+      isPaused = !isPaused;
+
+      const modal = document.getElementById('modal-pause');
+      if (isPaused) {
+        pauseStartTime = audioEngine.getCurrentTime();
+        modal.classList.remove('hidden');
+      } else {
+        totalPausedDuration += (audioEngine.getCurrentTime() - pauseStartTime);
+        modal.classList.add('hidden');
+        requestAnimationFrame(gameLoop);
+      }
+    }
+
+    /* ===================================================================
+       HIGH-PRECISION GAME LOOP (Delta-time Canvas Renderer)
+       =================================================================== */
+    function gameLoop(timestamp) {
+      if (!isPlaying || isPaused) return;
+
+      // Calculate Frame FPS
+      if (lastFrameTime) {
+        const delta = (timestamp - lastFrameTime) / 1000;
+        fps = Math.round(1 / delta);
+        document.getElementById('fps-counter').textContent = fps;
+      }
+      lastFrameTime = timestamp;
+
+      // Current Audio Song Time (Offset Adjusted)
+      const nowAudio = audioEngine.getCurrentTime();
+      const currentTime = (nowAudio - gameStartTime - totalPausedDuration) + (audioOffsetMs / 1000);
+
+      // Schedule Audio Synth Notes for Perfect Zero-Jitter Timing
+      scheduleAudioNotes(currentTime);
+
+      // Render Canvas Playfield
+      renderCanvasPlayfield(currentTime);
+
+      // Check End of Beatmap
+      if (currentTime >= selectedSong.duration + 1.2) {
+        finishGame();
+        return;
+      }
+
+      requestAnimationFrame(gameLoop);
+    }
+
+    // Audio Scheduler Queue
+    function scheduleAudioNotes(currentTime) {
+      const beatInterval = 60 / selectedSong.bpm;
+
+      while (scheduledAudioIndex < activeNotes.length) {
+        const note = activeNotes[scheduledAudioIndex];
+        // Schedule 0.2s in advance
+        if (note.time - currentTime <= 0.2) {
+          const scheduleTime = audioEngine.getCurrentTime() + (note.time - currentTime);
+          audioEngine.scheduleNoteTone(note.freq, scheduleTime);
+
+          // Rhythmic Kick
+          if (scheduledAudioIndex % 2 === 0) {
+            audioEngine.scheduleKick(scheduleTime);
+          }
+          scheduledAudioIndex++;
+        } else {
+          break;
+        }
+      }
+    }
+
+    /* ===================================================================
+       CANVAS 2D RENDERING ENGINE (Notes, LN Trails, Particles)
+       =================================================================== */
+    function renderCanvasPlayfield(currentTime) {
+      ctx.clearRect(0, 0, canvasWidth, canvasHeight);
+
+      const receptorY = canvasHeight - 56;
+      const colWidth = canvasWidth / 4;
+      const noteHeight = 22;
+      const speedPxPerSec = scrollSpeed * 350;
+
+      // 1. Draw Grid Lanes
+      ctx.strokeStyle = 'rgba(51, 65, 85, 0.3)';
+      ctx.lineWidth = 1;
+      for (let i = 1; i < 4; i++) {
+        ctx.beginPath();
+        ctx.moveTo(i * colWidth, 0);
+        ctx.lineTo(i * colWidth, canvasHeight);
+        ctx.stroke();
+      }
+
+      // 2. Render Active Notes & Hold Notes (LN)
+      for (let i = 0; i < activeNotes.length; i++) {
+        const note = activeNotes[i];
+
+        if (note.holdCompleted) continue;
+
+        const timeDiff = note.time - currentTime;
+        const noteY = receptorY - (timeDiff * speedPxPerSec);
+
+        // Auto-Miss Check for missed notes
+        if (!note.hit && !note.missed && currentTime - note.time > JUDGMENTS.MISS.window) {
+          note.missed = true;
+          registerHit(JUDGMENTS.MISS, 0);
+        }
+
+        // --- HOLD NOTE (LONG NOTE) RENDERING ---
+        if (note.holdDuration > 0) {
+          const holdEndY = noteY - (note.holdDuration * speedPxPerSec);
+          const headY = note.holdActive ? receptorY : noteY;
+
+          if (headY > 0 && holdEndY < canvasHeight) {
+            const x = note.lane * colWidth + 8;
+            const w = colWidth - 16;
+
+            // Draw Energy Trail Body
+            const isOuter = note.lane === 0 || note.lane === 3;
+            const trailGlow = isOuter ? 'rgba(6, 182, 212, 0.4)' : 'rgba(236, 72, 153, 0.4)';
+            
+            ctx.fillStyle = trailGlow;
+            ctx.fillRect(x + 4, holdEndY, w - 8, headY - holdEndY);
+
+            // Center laser stroke
+            ctx.strokeStyle = isOuter ? '#06b6d4' : '#ec4899';
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            ctx.moveTo(note.lane * colWidth + colWidth / 2, holdEndY);
+            ctx.lineTo(note.lane * colWidth + colWidth / 2, headY);
+            ctx.stroke();
+          }
+
+          // Active LN Release check
+          if (note.holdActive) {
+            const endTime = note.time + note.holdDuration;
+            if (currentTime >= endTime) {
+              note.holdCompleted = true;
+              registerHit(JUDGMENTS.MAX, 0);
+            }
+          }
+        }
+
+        // --- REGULAR NOTE HEAD RENDERING ---
+        if (!note.hit && noteY + noteHeight > 0 && noteY < canvasHeight) {
+          drawNoteHead(note.lane, noteY, colWidth, noteHeight);
+        }
+      }
+
+      // 3. Render Particles FX
+      updateAndDrawParticles(colWidth, receptorY);
+    }
+
+    function drawNoteHead(lane, y, colWidth, noteHeight) {
+      const padding = 5;
+      const x = lane * colWidth + padding;
+      const w = colWidth - (padding * 2);
+      const isOuter = lane === 0 || lane === 3;
+
+      const grad = ctx.createLinearGradient(x, y, x, y + noteHeight);
+      if (isOuter) {
+        grad.addColorStop(0, '#22d3ee');
+        grad.addColorStop(1, '#0891b2');
+      } else {
+        grad.addColorStop(0, '#f472b6');
+        grad.addColorStop(1, '#be185d');
+      }
+
+      ctx.shadowBlur = 12;
+      ctx.shadowColor = isOuter ? '#06b6d4' : '#ec4899';
+
+      ctx.fillStyle = grad;
+      ctx.beginPath();
+      ctx.roundRect(x, y, w, noteHeight, 6);
+      ctx.fill();
+
+      // Top Shine
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
+      ctx.beginPath();
+      ctx.roundRect(x + 3, y + 2, w - 6, 3, 2);
+      ctx.fill();
+
+      ctx.shadowBlur = 0;
+    }
+
+    /* ===================================================================
+       BURST PARTICLE FX SYSTEM
+       =================================================================== */
+    function spawnParticles(lane, colWidth, receptorY) {
+      const x = lane * colWidth + colWidth / 2;
+      const count = 12;
+
+      for (let i = 0; i < count; i++) {
+        particles.push({
+          x: x,
+          y: receptorY,
+          vx: (Math.random() - 0.5) * 6,
+          vy: (Math.random() - 1) * 7 - 2,
+          life: 1.0,
+          color: (lane === 0 || lane === 3) ? '#06b6d4' : '#ec4899',
+          size: Math.random() * 4 + 2
+        });
+      }
+    }
+
+    function updateAndDrawParticles(colWidth, receptorY) {
+      for (let i = particles.length - 1; i >= 0; i--) {
+        const p = particles[i];
+        p.x += p.vx;
+        p.y += p.vy;
+        p.life -= 0.05;
+
+        if (p.life <= 0) {
+          particles.splice(i, 1);
+          continue;
+        }
+
+        ctx.fillStyle = p.color;
+        ctx.globalAlpha = p.life;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      ctx.globalAlpha = 1.0;
+    }
+
+    /* ===================================================================
+       KEYPRESS & TIMING JUDGMENT ENGINE
+       =================================================================== */
+    function handleKeyDown(e) {
+      if (e.key === 'Escape') { togglePause(); return; }
+      if (e.key.toLowerCase() === 'r') { startGame(); return; }
+      if (!isPlaying || isPaused || e.repeat) return;
+
+      const lane = keyBindings.indexOf(e.key.toLowerCase());
+      if (lane !== -1) {
+        triggerLanePress(lane);
+      }
+    }
+
+    function handleKeyUp(e) {
+      if (!isPlaying || isPaused) return;
+      const lane = keyBindings.indexOf(e.key.toLowerCase());
+      if (lane !== -1) {
+        triggerLaneRelease(lane);
+      }
+    }
+
+    function triggerLanePress(lane) {
+      const laneLight = document.getElementById(`lane-light-${lane}`);
+      const keyCap = document.getElementById(`key-cap-${lane}`);
+      if (laneLight) laneLight.style.opacity = '1';
+      if (keyCap) keyCap.classList.add('text-cyan-400', 'scale-110');
+
+      const nowAudio = audioEngine.getCurrentTime();
+      const currentTime = (nowAudio - gameStartTime - totalPausedDuration) + (audioOffsetMs / 1000);
+      const colWidth = canvasWidth / 4;
+      const receptorY = canvasHeight - 56;
+
+      // Find closest note
+      let closestNote = null;
+      let minDelta = Infinity;
+      let signedDelta = 0;
+
+      for (let note of activeNotes) {
+        if (note.lane === lane && !note.hit && !note.missed) {
+          const delta = currentTime - note.time;
+          if (Math.abs(delta) < minDelta) {
+            minDelta = Math.abs(delta);
+            signedDelta = delta;
+            closestNote = note;
+          }
+        }
+      }
+
+      if (closestNote && minDelta <= JUDGMENTS.MISS.window) {
+        closestNote.hit = true;
+        audioEngine.playHitsound();
+        spawnParticles(lane, colWidth, receptorY);
+
+        if (closestNote.holdDuration > 0) {
+          closestNote.holdActive = true;
+        }
+
+        // Timing Accuracy Evaluation
+        if (minDelta <= JUDGMENTS.MAX.window) registerHit(JUDGMENTS.MAX, signedDelta);
+        else if (minDelta <= JUDGMENTS.P300.window) registerHit(JUDGMENTS.P300, signedDelta);
+        else if (minDelta <= JUDGMENTS.P200.window) registerHit(JUDGMENTS.P200, signedDelta);
+        else if (minDelta <= JUDGMENTS.P50.window) registerHit(JUDGMENTS.P50, signedDelta);
+        else registerHit(JUDGMENTS.MISS, signedDelta);
+      }
+    }
+
+    function triggerLaneRelease(lane) {
+      const laneLight = document.getElementById(`lane-light-${lane}`);
+      const keyCap = document.getElementById(`key-cap-${lane}`);
+      if (laneLight) laneLight.style.opacity = '0';
+      if (keyCap) keyCap.classList.remove('text-cyan-400', 'scale-110');
+
+      // Check LN early release
+      const nowAudio = audioEngine.getCurrentTime();
+      const currentTime = (nowAudio - gameStartTime - totalPausedDuration) + (audioOffsetMs / 1000);
+
+      for (let note of activeNotes) {
+        if (note.lane === lane && note.holdActive && !note.holdCompleted) {
+          note.holdActive = false;
+          note.missed = true;
+          registerHit(JUDGMENTS.MISS, 0);
+        }
+      }
+    }
+
+    function registerHit(judgment, signedDelta) {
+      // Update Stats
+      if (judgment === JUDGMENTS.MAX) {
+        counts.max++; combo++; hp = Math.min(100, hp + 3); totalHitPoints += JUDGMENTS.MAX.score;
+      } else if (judgment === JUDGMENTS.P300) {
+        counts.p300++; combo++; hp = Math.min(100, hp + 2); totalHitPoints += JUDGMENTS.P300.score;
+      } else if (judgment === JUDGMENTS.P200) {
+        counts.p200++; combo++; hp = Math.min(100, hp + 1); totalHitPoints += JUDGMENTS.P200.score;
+      } else if (judgment === JUDGMENTS.P50) {
+        counts.p50++; combo++; totalHitPoints += JUDGMENTS.P50.score;
+      } else { // MISS
+        counts.miss++; combo = 0; hp = Math.max(0, hp - 12);
+      }
+
+      if (combo > maxCombo) maxCombo = combo;
+      score += judgment.score + Math.floor(combo * 12);
+
+      updateHUD();
+      showJudgmentBanner(judgment);
+      updateUnstableRateBar(signedDelta);
+
+      if (hp <= 0) finishGame();
+    }
+
+    function showJudgmentBanner(judgment) {
+      const elem = document.getElementById('judgment-text');
+      elem.textContent = judgment.name;
+      elem.style.color = judgment.color;
+      elem.className = `text-3xl font-orbitron font-black tracking-wider transition-transform duration-75 scale-125`;
+
+      setTimeout(() => {
+        elem.className = `text-3xl font-orbitron font-black tracking-wider transition-transform duration-75 scale-100`;
+      }, 75);
+
+      const comboContainer = document.getElementById('combo-container');
+      const comboCount = document.getElementById('combo-count');
+
+      if (combo > 2) {
+        comboContainer.style.opacity = '1';
+        comboCount.textContent = combo;
+      } else {
+        comboContainer.style.opacity = '0';
+      }
+    }
+
+    function updateUnstableRateBar(signedDelta) {
+      const tick = document.getElementById('timing-tick');
+      const urText = document.getElementById('ur-text');
+
+      // Map delta (-0.15s to +0.15s) to bar percentage (0% to 100%)
+      const percentage = Math.max(0, Math.min(100, ((signedDelta + 0.15) / 0.3) * 100));
+      tick.style.left = `${percentage}%`;
+      tick.style.opacity = '1';
+
+      const ms = Math.round(signedDelta * 1000);
+      urText.textContent = `${ms > 0 ? '+' : ''}${ms} ms`;
+
+      setTimeout(() => { tick.style.opacity = '0'; }, 600);
+    }
+
+    function updateHUD() {
+      document.getElementById('game-score').textContent = score.toString().padStart(7, '0');
+
+      const hpBar = document.getElementById('hp-bar');
+      const hpText = document.getElementById('hp-text');
+      hpBar.style.width = `${hp}%`;
+      hpText.textContent = `${Math.round(hp)}%`;
+
+      const totalProcessed = counts.max + counts.p300 + counts.p200 + counts.p50 + counts.miss;
+      let accuracy = 100.00;
+      if (totalProcessed > 0) {
+        accuracy = (totalHitPoints / (totalProcessed * JUDGMENTS.MAX.score)) * 100;
+      }
+      document.getElementById('game-accuracy').textContent = `${accuracy.toFixed(2)}%`;
+    }
+
+    /* ===================================================================
+       FINAL EVALUATION & OSU! RANK SYSTEM
+       =================================================================== */
+    function finishGame() {
+      isPlaying = false;
+
+      const totalProcessed = counts.max + counts.p300 + counts.p200 + counts.p50 + counts.miss;
+      let finalAccuracy = 0;
+      if (totalProcessed > 0) {
+        finalAccuracy = (totalHitPoints / (totalProcessed * JUDGMENTS.MAX.score)) * 100;
+      }
+
+      // Calculate osu! Letter Rank
+      let rank = 'F';
+      let rankColor = 'text-rose-600';
+
+      if (hp <= 0) {
+        rank = 'F'; rankColor = 'text-rose-600';
+      } else if (finalAccuracy === 100) {
+        rank = 'SS'; rankColor = 'text-amber-300 glow-yellow';
+      } else if (finalAccuracy >= 95) {
+        rank = 'S'; rankColor = 'text-yellow-400 glow-yellow';
+      } else if (finalAccuracy >= 90) {
+        rank = 'A'; rankColor = 'text-emerald-400';
+      } else if (finalAccuracy >= 80) {
+        rank = 'B'; rankColor = 'text-cyan-400';
+      } else if (finalAccuracy >= 70) {
+        rank = 'C'; rankColor = 'text-fuchsia-400';
+      } else {
+        rank = 'D'; rankColor = 'text-slate-400';
+      }
+
+      document.getElementById('result-song-title').textContent = selectedSong.title;
+      document.getElementById('result-score').textContent = score.toString().padStart(7, '0');
+      document.getElementById('result-accuracy').textContent = `${finalAccuracy.toFixed(2)}%`;
+      document.getElementById('result-maxcombo').textContent = `${maxCombo}x`;
+
+      document.getElementById('count-max').textContent = counts.max;
+      document.getElementById('count-300').textContent = counts.p300;
+      document.getElementById('count-200').textContent = counts.p200;
+      document.getElementById('count-50').textContent = counts.p50;
+      document.getElementById('count-miss').textContent = counts.miss;
+
+      const rankElem = document.getElementById('result-rank');
+      rankElem.textContent = rank;
+      rankElem.className = `text-8xl font-orbitron font-black ${rankColor}`;
+
+      document.getElementById('screen-game').classList.add('hidden');
+      document.getElementById('screen-results').classList.remove('hidden');
+    }
+
+    /* ===================================================================
+       BEATMAP EDITOR CONTROLS
+       =================================================================== */
+    function openEditor() {
+      document.getElementById('editor-title').value = selectedSong.title;
+      document.getElementById('editor-bpm').value = selectedSong.bpm;
+      document.getElementById('editor-json').value = JSON.stringify(selectedSong, null, 2);
+      document.getElementById('screen-editor').classList.remove('hidden');
+    }
+
+    function closeEditor() {
+      document.getElementById('screen-editor').classList.add('hidden');
+    }
+
+    function saveEditorBeatmap() {
+      try {
+        const data = JSON.parse(document.getElementById('editor-json').value);
+        data.id = 'edited-' + Date.now();
+        data.diffColor = 'text-cyan-400';
+        SONG_CATALOG.push(data);
+        selectedSong = data;
+        renderSongList();
+        closeEditor();
+      } catch(err) {
+        alert('JSON Inválido! Verifique a sintaxe do arquivo.');
+      }
+    }
+
+    function exportEditorJson() {
+      const jsonStr = document.getElementById('editor-json').value;
+      const blob = new Blob([jsonStr], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${selectedSong.id}.json`;
+      a.click();
+    }
+  </script>
+</body>
+</html>
