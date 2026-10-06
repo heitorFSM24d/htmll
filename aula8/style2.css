@@ -32,7 +32,7 @@
     }
     main{
         padding: 10px;
-        width: 380px;
+        width: 600px;
         margin: auto;
     }
     main h2{
@@ -41,6 +41,7 @@
         color: #000000;
     }
     section{
+        text-align: center;
         background-color: #f8f8e9;
         border: 5px solid #0015ff;
         padding: 10px;

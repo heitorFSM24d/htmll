@@ -1,0 +1,59 @@
+body{
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background-color: #121214;
+    color: #F5F5F7;
+}
+main{
+    text-align: center;
+    max-width: 500px;
+    margin: 0 auto;
+    padding: 20px 16px;
+}
+h1{
+    color:#F5F5F7
+}
+.card{
+    background-color: #F5F5F7;
+    border: 5px solid #00F0FF;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    padding: 16px;
+}
+.card h4 {
+margin: 0 0 4px 0;
+color: #121214;
+}
+.card p {
+margin: 0;
+color:#121214;
+}
+
+/* Classes modificadoras se somam ao card */
+
+.destaque{
+    background-color: #00F0FF;
+    border-color: #F5F5F7;
+}
+
+.esgotado{
+    opacity: 0.8;
+}
+.esgotado h4{
+    text-decoration: line-through;
+    color:#ea0a0a;
+}
+
+/* ID são únicos, só podem ser usado uma vez */
+#promocao{
+    background-color: #ffd723;
+    border-color: #a4890e;
+    color:#ffffff;
+    text-align: center;
+}
+#promocao h4{
+    color:#121214;
+}
+#promocao p{
+    color:#121214;
+}
