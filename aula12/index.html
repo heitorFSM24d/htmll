@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Mídia em HTML — Cafeteria Grão Dourado</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <h1>Mídia em HTML por HFSM</h1>
+  <p>Vídeo, áudio, YouTube e PDF em uma única página.</p>
+
+  <!-- ===== VÍDEO ===== -->
+  <h2>Nosso vídeo</h2>
+  <video width="640" height="360" controls poster="imagem/poster.jpg" preload="metadata">
+    <source src="video/cafe.mp4" type="video/mp4">
+    <source src="video/cafe.webm" type="video/webm">
+    <track src="video/legenda.vtt" kind="subtitles" srclang="pt" label="Português" default>
+    Seu navegador não suporta vídeo.
+    <a href="video/cafe.mp4">Baixe o vídeo (MP4)</a>.
+  </video>
+
+  <!-- ===== ÁUDIO ===== -->
+  <h2>Nossa vinheta</h2>
+    <iframe width="100%" height="300" scrolling="no" frameborder="no" allow="autoplay; encrypted-media" src="https://w.soundcloud.com/player/?url=https%3A//api.soundcloud.com/tracks/soundcloud%253Atracks%253A231361745&color=%23ff5500&auto_play=false&hide_related=false&show_comments=true&show_user=true&show_reposts=false&show_teaser=true&visual=true"></iframe><div style="font-size: 10px; color: #cccccc;line-break: anywhere;word-break: normal;overflow: hidden;white-space: nowrap;text-overflow: ellipsis; font-family: Interstate,Lucida Grande,Lucida Sans Unicode,Lucida Sans,Garuda,Verdana,Tahoma,sans-serif;font-weight: 100;"><a href="https://soundcloud.com/smart-gaming-166773353" title="Smart Gaming" target="_blank" style="color: #cccccc; text-decoration: none;">Smart Gaming</a> · <a href="https://soundcloud.com/smart-gaming-166773353/file-select" title="File Select" target="_blank" style="color: #cccccc; text-decoration: none;">File Select</a></div>
+
+  <!-- ===== YOUTUBE ===== -->
+  <h2>Vídeo do YouTube</h2>
+  <!-- Troque SEU_ID_DO_VIDEO pelo código que aparece depois de "v=" no endereço do vídeo -->
+  <iframe width="560" height="315" src="https://www.youtube.com/embed/JMhEgwweeNI?si=_F3bnx3KNhsGsQrX" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+
+  <!-- ===== PDF ===== -->
+  <h2>Nosso cardápio</h2>
+  <object data="docs/cardapio.pdf" type="application/pdf" width="640" height="400">
+    Seu navegador não mostra PDF aqui.
+    <a href="docs/cardapio.pdf">Abra o cardápio em PDF</a>.
+  </object>
+
+</body>
+</html>
