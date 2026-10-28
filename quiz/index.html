@@ -660,7 +660,7 @@ tr:last-child td { border-bottom: 0; }
   <main id="aba-jogo" hidden>
     <section class="jogo" id="quiz">
       <div>
-        <div class="progresso-linha"><span id="progresso-texto">Dilema 1 de 8</span><span id="progresso-ctx"></span></div>
+        <div class="progresso-linha"><span id="progresso-texto">Situação 1 de 8</span><span id="progresso-ctx"></span></div>
         <div class="trilho" aria-hidden="true"><i id="progresso-barra"></i></div>
       </div>
       <p class="contexto" id="q-contexto"></p>
@@ -671,7 +671,7 @@ tr:last-child td { border-bottom: 0; }
         <h3 id="q-retorno-titulo" tabindex="-1">Para pensar</h3>
         <p class="veredito" id="q-veredito"></p>
         <p id="q-explicacao"></p>
-        <button class="btn" type="button" id="q-proximo">Próximo dilema</button>
+        <button class="btn" type="button" id="q-proximo">Próxima Situação</button>
       </section>
     </section>
 
@@ -681,7 +681,7 @@ tr:last-child td { border-bottom: 0; }
       <p class="resumo" id="r-resumo"></p>
       <div class="tabela-box">
         <table>
-          <thead><tr><th scope="col">Dilema</th><th scope="col">Sua escolha</th><th scope="col">Caminho sugerido</th></tr></thead>
+          <thead><tr><th scope="col">Situação</th><th scope="col">Sua escolha</th><th scope="col">Caminho sugerido</th></tr></thead>
           <tbody id="r-linhas"></tbody>
         </table>
       </div>
@@ -881,7 +881,7 @@ var DICAS = [
     respondeu = false;
     $("quiz").hidden = false;
     $("resultado").hidden = true;
-    $("progresso-texto").textContent = "Dilema " + (indice + 1) + " de " + total;
+    $("progresso-texto").textContent = "Situação " + (indice + 1) + " de " + total;
     $("progresso-barra").style.width = (indice / total * 100) + "%";
     $("q-contexto").textContent = d.contexto;
     $("q-situacao").textContent = d.situacao;
@@ -927,7 +927,7 @@ var DICAS = [
       ? "Você chegou ao mesmo caminho que sugerimos."
       : "Nossa sugestão era: " + OPCOES[d.sugerido].toLowerCase() + ". Outras visões são possíveis, o importante é saber explicar a sua.";
     $("q-explicacao").textContent = d.explicacao;
-    $("q-proximo").textContent = (indice + 1 < total) ? "Próximo dilema" : "Ver resultado";
+    $("q-proximo").textContent = (indice + 1 < total) ? "Próxima situação" : "Ver resultado";
     $("progresso-barra").style.width = ((indice + 1) / total * 100) + "%";
     $("q-retorno").hidden = false;
     $("q-retorno-titulo").focus();
