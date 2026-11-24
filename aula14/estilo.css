@@ -40,11 +40,12 @@
 
 body {
   font-family: 'Sora', sans-serif;
-  background-color: #06121e;
+  background-color: #fefefe;
 }
 
 img {
-  width: 100%;
+  align-items: center;
+  width: 50%;
 }
 
 a {
@@ -82,7 +83,7 @@ a:focus-visible {
   width: 100%;
   height: 100%;
   z-index: -1;
-  background-image: linear-gradient(to bottom, rgba(6, 18, 30, 0.1), #06121e), url("imagem/fundo.svg");
+  background-image: linear-gradient(to bottom, rgb(252, 207, 43), #805209);
   background-size: cover;
   background-repeat: no-repeat;
   background-position: 50% 0;
@@ -131,12 +132,12 @@ header {
 }
 
 .cabecalho-botao:hover {
-  border: 1px solid #d34040;
-  background-color: #d34040;
+  border: 1px solid #ffe70c;
+  background-color: #401d0c;
 }
 
 /* ===== HERO (frase principal) ===== */
-.destaque {
+.destaquebase {
   color: #fff;
   min-height: 80vh;
   display: flex;
@@ -146,14 +147,14 @@ header {
   padding: 14px;
 }
 
-.destaque h1 {
+.destaquebase h1 {
   text-align: center;
   line-height: 150%;
   max-width: 940px;
   font-size: 46px;
 }
 
-.destaque p {
+.destaquebase p {
   text-align: center;
   margin: 14px 0;
 }
@@ -177,7 +178,7 @@ header {
 
 /* ===== SOBRE ===== */
 .sobre {
-  background-color: #06121e;
+  background-color: #805209;
   color: #fff;
   overflow: hidden;
 }
@@ -209,9 +210,9 @@ header {
 }
 
 /* ===== SERVIÇOS ===== */
-.servicos {
-  background-color: #fff;
-  color: #232224;
+.destaque {
+  background-color: #fbfbfb;
+  color: #282729;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -219,21 +220,21 @@ header {
   padding: 54px 14px;
 }
 
-.servicos-conteudo h2 {
+.destaque-conteudo h2 {
   text-transform: uppercase;
   text-align: center;
   font-size: 38px;
   margin-bottom: 14px;
 }
 
-.servicos-conteudo p {
+.destaque-conteudo p {
   line-height: 150%;
   margin-bottom: 14px;
   text-align: center;
   max-width: 780px;
 }
 
-.cortes {
+.bolos {
   display: flex;
   justify-content: center;
   align-items: center;
@@ -241,7 +242,7 @@ header {
   padding: 0 44px 34px 44px;
 }
 
-.corte {
+.bolo {
   flex: 1;
   display: flex;
   flex-direction: column;
@@ -251,18 +252,19 @@ header {
   overflow: hidden;
 }
 
-.corte img {
+.bolo img {
   width: 100%;
-  max-width: 354px;
+  height: 250px;
+  object-fit: cover;
   transition: transform 0.2s;
 }
 
-.corte img:hover {
+.bolo img:hover {
   transform: scale(1.2);
   z-index: 1;
 }
 
-.corte-info {
+.bolo-info {
   width: 100%;
   display: flex;
   justify-content: space-between;
@@ -271,21 +273,22 @@ header {
   z-index: 99;
 }
 
-.corte-preco {
-  color: #fff;
-  background-color: #d94140;
+.bolo-preco {
+  color: #050505;
+  background-color: #d1af27;
   padding: 4px 8px;
   border-radius: 4px;
 }
 
 a {
-    color: #ffffff;
+    color: #070707;
     text-decoration: none;
 }
 
 
 /* ===== RODAPÉ ===== */
 .rodape {
+  background-color: #c88c09;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -298,6 +301,11 @@ a {
 .rodape-icones {
   display: flex;
   gap: 8px;
+}
+
+.rodape img {
+  max-width: 360px;
+  transition: transform 0.4s;
 }
 
 /* ===== BOTÃO FIXO DO WHATSAPP ===== */
