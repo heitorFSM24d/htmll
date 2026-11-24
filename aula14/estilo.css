@@ -44,8 +44,8 @@ body {
 }
 
 img {
-  align-items: center;
   width: 50%;
+  display: block;
 }
 
 a {
@@ -120,6 +120,11 @@ header {
   align-items: center;
   justify-content: center;
   margin-top: 14px;
+}
+
+.cabecalho-logo img {
+  width: 560px;
+  max-width: 100%;
 }
 
 .cabecalho-botao {
@@ -274,14 +279,14 @@ header {
 }
 
 .bolo-preco {
-  color: #050505;
+  color: #000000;
   background-color: #d1af27;
   padding: 4px 8px;
   border-radius: 4px;
 }
 
 a {
-    color: #070707;
+    color: #000000;
     text-decoration: none;
 }
 
@@ -304,7 +309,9 @@ a {
 }
 
 .rodape img {
-  max-width: 360px;
+  width: 360px; 
+  display: block;
+  margin: 0 auto;
   transition: transform 0.4s;
 }
 
@@ -362,7 +369,7 @@ a {
   }
 
   .cabecalho-logo img {
-    width: 160px;
+    width: 360px;
     margin-top: 46px;
   }
 
@@ -388,11 +395,11 @@ a {
     flex-direction: column;
   }
 
-  .cortes {
+  .bolos {
     flex-direction: column;
   }
 
-  .corte img {
+  .bolo img {
     max-width: 740px;
   }
 
